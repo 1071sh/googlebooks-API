@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Google Books</title>
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="search">
+                <h1>書籍・雑誌検索</h1>
+                <p class="search__intro">検索したいキーワードを入力してください。</p>
+                <input type="search" name="search" placeholder="キーワードを入力" class="search__input" id="searchInput" required>
+                <button class="search__btn search__submit" id="submitBtn">検索する</button>
+                <button class="search__btn search__clear" id="searchClear">クリア</button>
+            </div>
+            <div id="show_content" class="content"></div>
+        </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script>
+            // 要素の取得
+            const submitBtn = document.getElementById('submitBtn');
+            const searchClear = document.getElementById('searchClear');
+            const searchInput = document.getElementById('searchInput');
+
+            // クリアで内容消去
+            function CleadrInput() {
+                searchInput.value = "";
+            }
+            searchClear.addEventListener('click', CleadrInput, false);
+
+
+            // エンターキーでもsubmitする
+            searchInput.addEventListener('keypress', function () {
+                if (window.event.keyCode == 13) {
+                    $("#submitBtn").click();
+                }
+            });
+
+
+            // クリック後の処理
+            function showDetail() {
+                let searchValue = searchInput.value;
+                let wordUrl = searchValue;
+                // フォームが空の処理
+                if (searchValue == "") {
+                    alert('文字を入力してください');
+                    return;
+                }
+                $.getJSON(
+                    "https://www.googleapis.com/books/v1/volumes?q=" + wordUrl,
+                    function (data) {
+                        /* For debug */
+                        // console.dir(data);
+                        let view = "";
+                        for (let i = 0; i < data.items.length; i++) {
+                            let item = data.items[i];
+                            view += '<div class="book-card">';
+                            let bookimage = item.volumeInfo.imageLinks.thumbnail;
+                            view += '<p class="book-card__image"><img src="' + bookimage + '"></img></p>';
+                            view += '<div class="book-card__detail">';
+                            view += '<h2 class="book-card__title">' + item.volumeInfo.title + '</h2>';
+                            if (item.volumeInfo.publishedDate == undefined) {
+                                view
+                            } else {
+                                view += '<time class="book-card__publish">' + item.volumeInfo.publishedDate + '</time>';
+                            }
+                            if (item.volumeInfo.authors === undefined) {
+                                view
+                            } else {
+                                view += '<span class="book-card__author">' + item.volumeInfo.authors + '</span>';
+                            }
+                            view += '<a class="book-card__btn" target="_blank" href="' + item.volumeInfo.infoLink + '">' + '詳細</a>';
+                            view += '</div>';
+                            view += '</div>';
+                        }
+                        $("#show_content").html(view);
+                    })
+            }
+            submitBtn.addEventListener('click', showDetail, false);
+        </script>
+    </body>
+</html>
